@@ -1,5 +1,5 @@
 //! ```rust
-//! use activesupport::time::{Duration, TimeDuration, TimeRange, Utc, TimeCalculation, Timelike};
+//! use activesupport::time::{Duration, TimeDuration, TimeRange, Utc, Local, TimeCalculation, Timelike};
 //!
 //! assert_eq!(60.seconds(), Duration::seconds((60).into()));
 //! assert_eq!(1.second(), Duration::seconds((1).into()));
