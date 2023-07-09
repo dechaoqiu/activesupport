@@ -123,6 +123,7 @@ pub trait TimeCalculation {
     fn beginning_of_minute(&self) -> Option<DateTime<Utc>>;
     fn end_of_minute(&self) -> Option<DateTime<Utc>>;
 }
+
 impl TimeCalculation for DateTime<Utc> {
     // TODO: beginning_of_day, end_of_day
     fn beginning_of_hour(&self) -> Option<DateTime<Utc>> {
