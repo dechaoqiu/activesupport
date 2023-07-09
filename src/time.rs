@@ -219,7 +219,7 @@ mod tests {
     #[test]
     fn end_of_hour_works() {
         let a = Utc::now().end_of_hour().unwrap();
-        assert_eq!(a.second() % 60, 59);
+        assert_eq!(a.second(), 59);
         assert_eq!(a.nanosecond(), 999999999);
     }
 
