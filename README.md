@@ -16,7 +16,7 @@ Active Support is released under the MIT license:
 ## Usage example
 
 ```rust
-use activesupport::TimeDuration
+use activesupport::time::TimeDuration;
 
 assert_eq!(60.seconds(), Duration::seconds((60).into()));
 assert_eq!(1.second(), Duration::seconds((1).into()));
@@ -33,7 +33,7 @@ assert_eq!(1.fortnight(), Duration::weeks((2).into()));
 ```
 
 ```rust
-use activesupport::TimeRange
+use activesupport::time::TimeRange;
 
 assert!(1.day().from_now() <= Utc::now().checked_add_signed(1.day().to_owned()));
 assert!(2.weeks().from_now() <= Utc::now().checked_add_signed(2.weeks().to_owned()));
