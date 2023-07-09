@@ -63,5 +63,15 @@ fn main() {
     let a = Utc::now().end_of_minute().unwrap();
     assert_eq!(a.second(), 59);
     assert_eq!(a.nanosecond(), 999999999);
+
+    let a = Utc::now().beginning_of_day().unwrap();
+    assert_eq!(a.hour(), 0);
+    assert_eq!(a.second(), 0);
+    assert_eq!(a.nanosecond(), 0);
+
+    let a = Utc::now().end_of_day().unwrap();
+    assert_eq!(a.hour(), 23);
+    assert_eq!(a.second(), 59);
+    assert_eq!(a.nanosecond(), 999999999);
 }
 ```
