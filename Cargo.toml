@@ -1,6 +1,6 @@
 [package]
 name = "activesupport"
-version = "0.0.1-alpha.6"
+version = "0.0.1-alpha.7"
 description = "Utility extensions for Rust inspired by activesupport of Ruby on Rails"
 homepage = "https://github.com/dechaoqiu/activesupport"
 repository = "https://github.com/dechaoqiu/activesupport"
