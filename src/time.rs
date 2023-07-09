@@ -1,4 +1,4 @@
-pub use chrono::{DateTime, Duration, TimeZone, Timelike, Utc};
+pub use chrono::{DateTime, Duration, Local, TimeZone, Timelike, Utc};
 
 pub trait TimeDuration {
     fn in_milliseconds(&self) -> i32;
@@ -117,51 +117,77 @@ impl TimeRange for Duration {
 }
 
 pub trait TimeCalculation {
-    fn beginning_of_day(&self) -> Option<Self> where Self: Sized;
-    fn end_of_day(&self) -> Option<Self> where Self: Sized;
-    fn beginning_of_hour(&self) -> Option<Self> where Self: Sized;
-    fn end_of_hour(&self) -> Option<Self> where Self: Sized;
-    fn beginning_of_minute(&self) -> Option<Self> where Self: Sized;
-    fn end_of_minute(&self) -> Option<Self> where Self: Sized;
+    fn beginning_of_day(&self) -> Option<Self>
+    where
+        Self: Sized;
+    fn end_of_day(&self) -> Option<Self>
+    where
+        Self: Sized;
+    fn beginning_of_hour(&self) -> Option<Self>
+    where
+        Self: Sized;
+    fn end_of_hour(&self) -> Option<Self>
+    where
+        Self: Sized;
+    fn beginning_of_minute(&self) -> Option<Self>
+    where
+        Self: Sized;
+    fn end_of_minute(&self) -> Option<Self>
+    where
+        Self: Sized;
 }
 
 impl<Tz: TimeZone> TimeCalculation for DateTime<Tz> {
-    fn beginning_of_day(&self) -> Option<Self> where Self: Sized {
+    fn beginning_of_day(&self) -> Option<Self>
+    where
+        Self: Sized,
+    {
         let ts = self.beginning_of_hour();
         ts.and_then(|f| {
             let hour = f.hour() as i64;
-            f.checked_sub_signed(Duration::nanoseconds(
-                (hour) * 3_600_000_000_000_i64,
-            ))
+            f.checked_sub_signed(Duration::nanoseconds((hour) * 3_600_000_000_000_i64))
         })
     }
 
-    fn end_of_day(&self) -> Option<Self> where Self: Sized {
+    fn end_of_day(&self) -> Option<Self>
+    where
+        Self: Sized,
+    {
         self.end_of_hour().and_then(|f| {
             let hour = f.hour() as i64;
-            f.checked_add_signed(Duration::nanoseconds(
-                ((23 - hour) as i64) * 3_600_000_000_000_i64,
-            ))
+            f.checked_add_signed(Duration::nanoseconds((23 - hour) * 3_600_000_000_000_i64))
         })
     }
 
-    fn beginning_of_hour(&self) -> Option<Self> where Self: Sized {
+    fn beginning_of_hour(&self) -> Option<Self>
+    where
+        Self: Sized,
+    {
         let a: i64 = self.timestamp_nanos() % 3_600_000_000_000;
         self.to_owned().checked_sub_signed(Duration::nanoseconds(a))
     }
 
-    fn end_of_hour(&self) -> Option<Self> where Self: Sized {
+    fn end_of_hour(&self) -> Option<Self>
+    where
+        Self: Sized,
+    {
         self.beginning_of_hour().and_then(|f| {
             f.checked_add_signed(Duration::nanoseconds((3600 - 1) * 1000000000 + 999999999))
         })
     }
 
-    fn beginning_of_minute(&self) -> Option<Self> where Self: Sized {
+    fn beginning_of_minute(&self) -> Option<Self>
+    where
+        Self: Sized,
+    {
         let a: i64 = self.timestamp_nanos() % 60_000_000_000;
         self.to_owned().checked_sub_signed(Duration::nanoseconds(a))
     }
 
-    fn end_of_minute(&self) -> Option<Self> where Self: Sized {
+    fn end_of_minute(&self) -> Option<Self>
+    where
+        Self: Sized,
+    {
         self.beginning_of_minute().and_then(|f| {
             f.checked_add_signed(Duration::nanoseconds((60 - 1) * 1000000000 + 999999999))
         })
@@ -170,8 +196,6 @@ impl<Tz: TimeZone> TimeCalculation for DateTime<Tz> {
 
 #[cfg(test)]
 mod tests {
-
-    use chrono::Local;
 
     use super::*;
 
