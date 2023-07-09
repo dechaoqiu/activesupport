@@ -82,14 +82,14 @@ impl TimeDuration for i32 {
 
 pub trait TimeRange {
     #[allow(clippy::wrong_self_convention)]
-    fn from_now(&self) -> Option<chrono::DateTime<Utc>>;
+    fn from_now(&self) -> Option<DateTime<Utc>>;
     #[inline]
-    fn since(&self) -> Option<chrono::DateTime<Utc>> {
+    fn since(&self) -> Option<DateTime<Utc>> {
         self.from_now()
     }
 
     #[inline]
-    fn after(&self) -> Option<chrono::DateTime<Utc>> {
+    fn after(&self) -> Option<DateTime<Utc>> {
         self.from_now()
     }
 
@@ -117,49 +117,51 @@ impl TimeRange for Duration {
 }
 
 pub trait TimeCalculation {
-    fn beginning_of_day(&self) -> Option<DateTime<Utc>>;
-    fn end_of_day(&self) -> Option<DateTime<Utc>>;
-    fn beginning_of_hour(&self) -> Option<DateTime<Utc>>;
-    fn end_of_hour(&self) -> Option<DateTime<Utc>>;
-    fn beginning_of_minute(&self) -> Option<DateTime<Utc>>;
-    fn end_of_minute(&self) -> Option<DateTime<Utc>>;
+    fn beginning_of_day(&self) -> Option<Self> where Self: Sized;
+    fn end_of_day(&self) -> Option<Self> where Self: Sized;
+    fn beginning_of_hour(&self) -> Option<Self> where Self: Sized;
+    fn end_of_hour(&self) -> Option<Self> where Self: Sized;
+    fn beginning_of_minute(&self) -> Option<Self> where Self: Sized;
+    fn end_of_minute(&self) -> Option<Self> where Self: Sized;
 }
 
-impl TimeCalculation for DateTime<Utc> {
-    fn beginning_of_day(&self) -> Option<DateTime<Utc>> {
+impl<Tz: TimeZone> TimeCalculation for DateTime<Tz> {
+    fn beginning_of_day(&self) -> Option<Self> where Self: Sized {
         let ts = self.beginning_of_hour();
         ts.and_then(|f| {
+            let hour = f.hour() as i64;
             f.checked_sub_signed(Duration::nanoseconds(
-                (f.hour() as i64) * 3_600_000_000_000_i64,
+                (hour) * 3_600_000_000_000_i64,
             ))
         })
     }
 
-    fn end_of_day(&self) -> Option<DateTime<Utc>> {
+    fn end_of_day(&self) -> Option<Self> where Self: Sized {
         self.end_of_hour().and_then(|f| {
+            let hour = f.hour() as i64;
             f.checked_add_signed(Duration::nanoseconds(
-                ((23 - f.hour()) as i64) * 3_600_000_000_000_i64,
+                ((23 - hour) as i64) * 3_600_000_000_000_i64,
             ))
         })
     }
 
-    fn beginning_of_hour(&self) -> Option<DateTime<Utc>> {
+    fn beginning_of_hour(&self) -> Option<Self> where Self: Sized {
         let a: i64 = self.timestamp_nanos() % 3_600_000_000_000;
         self.to_owned().checked_sub_signed(Duration::nanoseconds(a))
     }
 
-    fn end_of_hour(&self) -> Option<DateTime<Utc>> {
+    fn end_of_hour(&self) -> Option<Self> where Self: Sized {
         self.beginning_of_hour().and_then(|f| {
             f.checked_add_signed(Duration::nanoseconds((3600 - 1) * 1000000000 + 999999999))
         })
     }
 
-    fn beginning_of_minute(&self) -> Option<DateTime<Utc>> {
+    fn beginning_of_minute(&self) -> Option<Self> where Self: Sized {
         let a: i64 = self.timestamp_nanos() % 60_000_000_000;
         self.to_owned().checked_sub_signed(Duration::nanoseconds(a))
     }
 
-    fn end_of_minute(&self) -> Option<DateTime<Utc>> {
+    fn end_of_minute(&self) -> Option<Self> where Self: Sized {
         self.beginning_of_minute().and_then(|f| {
             f.checked_add_signed(Duration::nanoseconds((60 - 1) * 1000000000 + 999999999))
         })
@@ -168,6 +170,8 @@ impl TimeCalculation for DateTime<Utc> {
 
 #[cfg(test)]
 mod tests {
+
+    use chrono::Local;
 
     use super::*;
 
@@ -214,11 +218,19 @@ mod tests {
         let a = Utc::now().beginning_of_hour().unwrap();
         assert_eq!(a.second(), 0);
         assert_eq!(a.nanosecond(), 0);
+
+        let a = Local::now().beginning_of_hour().unwrap();
+        assert_eq!(a.second(), 0);
+        assert_eq!(a.nanosecond(), 0);
     }
 
     #[test]
     fn end_of_hour_works() {
         let a = Utc::now().end_of_hour().unwrap();
+        assert_eq!(a.second(), 59);
+        assert_eq!(a.nanosecond(), 999999999);
+
+        let a = Local::now().end_of_hour().unwrap();
         assert_eq!(a.second(), 59);
         assert_eq!(a.nanosecond(), 999999999);
     }
@@ -228,11 +240,19 @@ mod tests {
         let a = Utc::now().beginning_of_minute().unwrap();
         assert_eq!(a.second(), 0);
         assert_eq!(a.nanosecond(), 0);
+
+        let a = Local::now().beginning_of_minute().unwrap();
+        assert_eq!(a.second(), 0);
+        assert_eq!(a.nanosecond(), 0);
     }
 
     #[test]
     fn end_of_minute_works() {
         let a = Utc::now().end_of_minute().unwrap();
+        assert_eq!(a.second(), 59);
+        assert_eq!(a.nanosecond(), 999999999);
+
+        let a = Local::now().end_of_minute().unwrap();
         assert_eq!(a.second(), 59);
         assert_eq!(a.nanosecond(), 999999999);
     }
@@ -243,11 +263,21 @@ mod tests {
         assert_eq!(a.hour(), 0);
         assert_eq!(a.second(), 0);
         assert_eq!(a.nanosecond(), 0);
+
+        let a = Local::now().beginning_of_day().unwrap();
+        assert_eq!(a.hour(), 0);
+        assert_eq!(a.second(), 0);
+        assert_eq!(a.nanosecond(), 0);
     }
 
     #[test]
     fn end_of_day_works() {
         let a = Utc::now().end_of_day().unwrap();
+        assert_eq!(a.hour(), 23);
+        assert_eq!(a.second(), 59);
+        assert_eq!(a.nanosecond(), 999999999);
+
+        let a = Local::now().end_of_day().unwrap();
         assert_eq!(a.hour(), 23);
         assert_eq!(a.second(), 59);
         assert_eq!(a.nanosecond(), 999999999);
