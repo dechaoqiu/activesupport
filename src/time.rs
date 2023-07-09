@@ -117,6 +117,8 @@ impl TimeRange for Duration {
 }
 
 pub trait TimeCalculation {
+    fn beginning_of_day(&self) -> Option<DateTime<Utc>>;
+    fn end_of_day(&self) -> Option<DateTime<Utc>>;
     fn beginning_of_hour(&self) -> Option<DateTime<Utc>>;
     fn end_of_hour(&self) -> Option<DateTime<Utc>>;
     fn beginning_of_minute(&self) -> Option<DateTime<Utc>>;
@@ -124,7 +126,23 @@ pub trait TimeCalculation {
 }
 
 impl TimeCalculation for DateTime<Utc> {
-    // TODO: beginning_of_day, end_of_day
+    fn beginning_of_day(&self) -> Option<DateTime<Utc>> {
+        let ts = self.beginning_of_hour();
+        ts.and_then(|f| {
+            f.checked_sub_signed(Duration::nanoseconds(
+                (f.hour() as i64) * 3_600_000_000_000_i64,
+            ))
+        })
+    }
+
+    fn end_of_day(&self) -> Option<DateTime<Utc>> {
+        self.end_of_hour().and_then(|f| {
+            f.checked_add_signed(Duration::nanoseconds(
+                ((23 - f.hour()) as i64) * 3_600_000_000_000_i64,
+            ))
+        })
+    }
+
     fn beginning_of_hour(&self) -> Option<DateTime<Utc>> {
         let a: i64 = self.timestamp_nanos() % 3_600_000_000_000;
         self.to_owned().checked_sub_signed(Duration::nanoseconds(a))
@@ -215,6 +233,22 @@ mod tests {
     #[test]
     fn end_of_minute_works() {
         let a = Utc::now().end_of_minute().unwrap();
+        assert_eq!(a.second(), 59);
+        assert_eq!(a.nanosecond(), 999999999);
+    }
+
+    #[test]
+    fn beginning_of_day_works() {
+        let a = Utc::now().beginning_of_day().unwrap();
+        assert_eq!(a.hour(), 0);
+        assert_eq!(a.second(), 0);
+        assert_eq!(a.nanosecond(), 0);
+    }
+
+    #[test]
+    fn end_of_day_works() {
+        let a = Utc::now().end_of_day().unwrap();
+        assert_eq!(a.hour(), 23);
         assert_eq!(a.second(), 59);
         assert_eq!(a.nanosecond(), 999999999);
     }
