@@ -1,7 +1,8 @@
+pub use chrono::TimeZone;
 pub use chrono::{DateTime, Duration, Utc};
 
 pub trait TimeDuration {
-    fn in_milliseconds(&self) -> Duration;
+    fn in_milliseconds(&self) -> i32;
 
     fn seconds(&self) -> Duration;
 
@@ -74,14 +75,13 @@ impl TimeDuration for i32 {
     }
 
     #[inline]
-    fn in_milliseconds(&self) -> Duration {
-        Duration::milliseconds((*self * 1000).into())
+    fn in_milliseconds(&self) -> i32 {
+        (*self) * 1000
     }
     // TODO: months, years
 }
 
 pub trait TimeRange {
-    // TODO: in_minutes, in_hours, in_days, in_weeks, in_months, in_years
     #[allow(clippy::wrong_self_convention)]
     fn from_now(&self) -> Option<chrono::DateTime<Utc>>;
     #[inline]
@@ -117,8 +117,42 @@ impl TimeRange for Duration {
     }
 }
 
+pub trait TimeCalculation {
+    fn beginning_of_hour(&self) -> Option<DateTime<Utc>>;
+    fn end_of_hour(&self) -> Option<DateTime<Utc>>;
+    fn beginning_of_minute(&self) -> Option<DateTime<Utc>>;
+    fn end_of_minute(&self) -> Option<DateTime<Utc>>;
+}
+
+impl TimeCalculation for DateTime<Utc> {
+    // TODO: beginning_of_day, end_of_day
+    fn beginning_of_hour(&self) -> Option<DateTime<Utc>> {
+        let a: i64 = self.timestamp_nanos() % 3_600_000_000_000;
+        self.to_owned().checked_sub_signed(Duration::nanoseconds(a))
+    }
+
+    fn end_of_hour(&self) -> Option<DateTime<Utc>> {
+        self.beginning_of_hour().and_then(|f| {
+            f.checked_add_signed(Duration::nanoseconds((3600 - 1) * 1000000000 + 999999999))
+        })
+    }
+
+    fn beginning_of_minute(&self) -> Option<DateTime<Utc>> {
+        let a: i64 = self.timestamp_nanos() % 60_000_000_000;
+        self.to_owned().checked_sub_signed(Duration::nanoseconds(a))
+    }
+
+    fn end_of_minute(&self) -> Option<DateTime<Utc>> {
+        self.beginning_of_minute().and_then(|f| {
+            f.checked_add_signed(Duration::nanoseconds((60 - 1) * 1000000000 + 999999999))
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use chrono::Timelike;
+
     use super::*;
 
     #[test]
@@ -152,5 +186,38 @@ mod tests {
             (4.days() + 5.weeks()).ago()
                 <= Utc::now().checked_sub_signed((4.days() + 5.weeks()).to_owned())
         );
+    }
+
+    #[test]
+    fn in_milliseconds_works() {
+        assert!(1.in_milliseconds() <= 1000);
+    }
+
+    #[test]
+    fn beginning_of_hour_works() {
+        let a = Utc::now().beginning_of_hour().unwrap();
+        assert_eq!(a.second(), 0);
+        assert_eq!(a.nanosecond(), 0);
+    }
+
+    #[test]
+    fn end_of_hour_works() {
+        let a = Utc::now().end_of_hour().unwrap();
+        assert_eq!(a.second() % 60, 59);
+        assert_eq!(a.nanosecond(), 999999999);
+    }
+
+    #[test]
+    fn beginning_of_minute_works() {
+        let a = Utc::now().beginning_of_minute().unwrap();
+        assert_eq!(a.second(), 0);
+        assert_eq!(a.nanosecond(), 0);
+    }
+
+    #[test]
+    fn end_of_minute_works() {
+        let a = Utc::now().end_of_minute().unwrap();
+        assert_eq!(a.second(), 59);
+        assert_eq!(a.nanosecond(), 999999999);
     }
 }

@@ -45,5 +45,23 @@ fn main() {
         (4.days() + 5.weeks()).ago()
             <= Utc::now().checked_sub_signed((4.days() + 5.weeks()).to_owned())
     );
+
+    assert!(1.in_milliseconds() <= 1000);
+
+    let a = Utc::now().beginning_of_hour().unwrap();
+    assert_eq!(a.second(), 0);
+    assert_eq!(a.nanosecond(), 0);
+
+    let a = Utc::now().end_of_hour().unwrap();
+    assert_eq!(a.second() % 60, 59);
+    assert_eq!(a.nanosecond(), 999999999);
+
+    let a = Utc::now().beginning_of_minute().unwrap();
+    assert_eq!(a.second(), 0);
+    assert_eq!(a.nanosecond(), 0);
+
+    let a = Utc::now().end_of_minute().unwrap();
+    assert_eq!(a.second(), 59);
+    assert_eq!(a.nanosecond(), 999999999);
 }
 ```
