@@ -16,7 +16,7 @@ Active Support is released under the MIT license:
 ## Usage example
 
 ```rust
-use activesupport::time::{Duration, TimeDuration, TimeRange, Utc, TimeCalculation, Timelike};
+use activesupport::time::{Duration, TimeDuration, TimeRange, Utc, Local, TimeCalculation, Timelike};
 
 fn main() {
     assert_eq!(60.seconds(), Duration::seconds((60).into()));
@@ -52,7 +52,15 @@ fn main() {
     assert_eq!(a.second(), 0);
     assert_eq!(a.nanosecond(), 0);
 
+    let a = Local::now().beginning_of_hour().unwrap();
+    assert_eq!(a.second(), 0);
+    assert_eq!(a.nanosecond(), 0);
+
     let a = Utc::now().end_of_hour().unwrap();
+    assert_eq!(a.second(), 59);
+    assert_eq!(a.nanosecond(), 999999999);
+
+    let a = Local::now().end_of_hour().unwrap();
     assert_eq!(a.second(), 59);
     assert_eq!(a.nanosecond(), 999999999);
 
@@ -60,7 +68,15 @@ fn main() {
     assert_eq!(a.second(), 0);
     assert_eq!(a.nanosecond(), 0);
 
+    let a = Local::now().beginning_of_minute().unwrap();
+    assert_eq!(a.second(), 0);
+    assert_eq!(a.nanosecond(), 0);
+
     let a = Utc::now().end_of_minute().unwrap();
+    assert_eq!(a.second(), 59);
+    assert_eq!(a.nanosecond(), 999999999);
+
+    let a = Local::now().end_of_minute().unwrap();
     assert_eq!(a.second(), 59);
     assert_eq!(a.nanosecond(), 999999999);
 
@@ -69,7 +85,17 @@ fn main() {
     assert_eq!(a.second(), 0);
     assert_eq!(a.nanosecond(), 0);
 
+    let a = Local::now().beginning_of_day().unwrap();
+    assert_eq!(a.hour(), 0);
+    assert_eq!(a.second(), 0);
+    assert_eq!(a.nanosecond(), 0);
+
     let a = Utc::now().end_of_day().unwrap();
+    assert_eq!(a.hour(), 23);
+    assert_eq!(a.second(), 59);
+    assert_eq!(a.nanosecond(), 999999999);
+
+    let a = Local::now().end_of_day().unwrap();
     assert_eq!(a.hour(), 23);
     assert_eq!(a.second(), 59);
     assert_eq!(a.nanosecond(), 999999999);

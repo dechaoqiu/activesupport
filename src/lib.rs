@@ -1,5 +1,5 @@
 //! ```rust
-//! use activesupport::time::{Duration, TimeDuration, TimeRange, Utc, TimeCalculation, Timelike};
+//! use activesupport::time::{Duration, TimeDuration, TimeRange, Utc, Local, TimeCalculation, Timelike};
 //!
 //! assert_eq!(60.seconds(), Duration::seconds((60).into()));
 //! assert_eq!(1.second(), Duration::seconds((1).into()));
@@ -30,7 +30,7 @@
 //!
 //! assert!(1.in_milliseconds() <= 1000);
 //!
-//! let a = Utc::now().beginning_of_hour().unwrap();
+//! let a = Local::now().beginning_of_hour().unwrap();
 //! assert_eq!(a.second(), 0);
 //! assert_eq!(a.nanosecond(), 0);
 //!
@@ -38,11 +38,23 @@
 //! assert_eq!(a.second(), 59);
 //! assert_eq!(a.nanosecond(), 999999999);
 //!
+//! let a = Local::now().end_of_hour().unwrap();
+//! assert_eq!(a.second(), 59);
+//! assert_eq!(a.nanosecond(), 999999999);
+//!
 //! let a = Utc::now().beginning_of_minute().unwrap();
 //! assert_eq!(a.second(), 0);
 //! assert_eq!(a.nanosecond(), 0);
 //!
+//! let a = Local::now().beginning_of_minute().unwrap();
+//! assert_eq!(a.second(), 0);
+//! assert_eq!(a.nanosecond(), 0);
+//!
 //! let a = Utc::now().end_of_minute().unwrap();
+//! assert_eq!(a.second(), 59);
+//! assert_eq!(a.nanosecond(), 999999999);
+//!
+//! let a = Local::now().end_of_minute().unwrap();
 //! assert_eq!(a.second(), 59);
 //! assert_eq!(a.nanosecond(), 999999999);
 //!
@@ -51,7 +63,17 @@
 //! assert_eq!(a.second(), 0);
 //! assert_eq!(a.nanosecond(), 0);
 //!
+//! let a = Local::now().beginning_of_day().unwrap();
+//! assert_eq!(a.hour(), 0);
+//! assert_eq!(a.second(), 0);
+//! assert_eq!(a.nanosecond(), 0);
+//!
 //! let a = Utc::now().end_of_day().unwrap();
+//! assert_eq!(a.hour(), 23);
+//! assert_eq!(a.second(), 59);
+//! assert_eq!(a.nanosecond(), 999999999);
+//!
+//! let a = Local::now().end_of_day().unwrap();
 //! assert_eq!(a.hour(), 23);
 //! assert_eq!(a.second(), 59);
 //! assert_eq!(a.nanosecond(), 999999999);
