@@ -1,5 +1,4 @@
-pub use chrono::TimeZone;
-pub use chrono::{DateTime, Duration, Utc};
+pub use chrono::{DateTime, Duration, TimeZone, Timelike, Utc};
 
 pub trait TimeDuration {
     fn in_milliseconds(&self) -> i32;
@@ -151,7 +150,6 @@ impl TimeCalculation for DateTime<Utc> {
 
 #[cfg(test)]
 mod tests {
-    use chrono::Timelike;
 
     use super::*;
 
